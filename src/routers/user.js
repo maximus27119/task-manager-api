@@ -71,7 +71,7 @@ router.post('/users/logoutAll', auth, async (req, res) => {
     }
 });
 
-router.patch('/users/:id', async (req, res) => { // Обновление данных юзера
+router.patch('/users/me', auth, async (req, res) => { // Обновление данных юзера
     const updates = Object.keys(req.body);
     const allowedUpdates = ['name', 'age', 'email', 'password'];
 
@@ -84,22 +84,9 @@ router.patch('/users/:id', async (req, res) => { // Обновление дан�
     }
 
     try{
-        const _id = req.params.id;
-        const user = await User.findById(_id);
-
-        if(!user){
-            return res.status(404).send();
-        }
-
-        updates.forEach((update) => {
-            user[update] = req.body[update];
-        });
-
-        await user.save();
-
-        // const user = await User.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true });
- 
-        res.send(user);
+        updates.forEach((update) => req.user[update] = req.body[update]);
+        await req.user.save();
+        res.send(req.user);
     }catch(e){
         res.status(500).send(e);
     }
