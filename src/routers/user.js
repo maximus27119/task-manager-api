@@ -88,20 +88,21 @@ router.patch('/users/me', auth, async (req, res) => { // Обновление д
         await req.user.save();
         res.send(req.user);
     }catch(e){
-        res.status(500).send(e);
+        res.status(400).send(e);
     }
 });
 
-router.delete('/users/:id', async (req, res) => { // Удаление юзера
+router.delete('/users/me', auth, async (req, res) => { // Удаление юзера
     try{
-        const _id = req.params.id;
-        const user = await User.findByIdAndDelete(_id);
+        // const _id = req.params.id;
+        // const user = await User.findByIdAndDelete(_id);
+        await req.user.remove();
 
-        if(!user){
-            return res.status(404).send();
-        }
+        // if(!user){
+        //     return res.status(404).send();
+        // }
 
-        res.send(user);
+        res.send(req.user);
     }catch(e){
         res.status(500).send(e);
     }

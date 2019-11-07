@@ -1,21 +1,30 @@
 const express = require('express');
 const Task = require('../models/task');
+const auth = require('../middleware/auth');
 const router = new express.Router();
 
-router.get('/tasks', async (req, res) => { // Получить массив тасков
+router.get('/tasks', auth, async (req, res) => { // Получить массив тасков
     try{
-        const tasks = await Task.find({});
-        res.send(tasks);
+        // const tasks = await Task.find({ owner: req.user._id });
+        
+        await req.user.populate('tasks').execPopulate();
+        
+        res.send(req.user.tasks);
+        
     }catch(e){
-        res.status(500).send();
+        console.log(e);
+        res.status(500).send(e);
     }
 });
 
-router.get('/tasks/:id', async (req, res) => { // Поиск таска по айди
+router.get('/tasks/:id', auth, async (req, res) => { // Поиск таска по айди
     const _id = req.params.id;
 
     try{
-        const task = await Task.findById(_id);
+        // const task = await Task.findById(_id);
+        const _id = req.params.id;
+        const owner = req.user._id;
+        const task = await Task.findOne({ _id, owner});
 
         if(!task){
             res.status(404).send();
@@ -27,8 +36,11 @@ router.get('/tasks/:id', async (req, res) => { // Поиск таска по а�
     }
 });
 
-router.post('/tasks', async (req, res) => { // Создание таска
-    const task = new Task(req.body);
+router.post('/tasks', auth, async (req, res) => { // Создание таска
+    const task = new Task({
+        ...req.body,
+        owner: req.user._id
+    });
 
     try{
         await task.save();
@@ -38,7 +50,7 @@ router.post('/tasks', async (req, res) => { // Создание таска
     }
 });
 
-router.patch('/tasks/:id', async (req, res) => { // Обновление данных таска
+router.patch('/tasks/:id', auth, async (req, res) => { // Обновление данных таска
     const updates = Object.keys(req.body);
     const allowedUpdates = ['completed', 'description'];
 
@@ -51,8 +63,11 @@ router.patch('/tasks/:id', async (req, res) => { // Обновление дан�
     }
 
     try{
+        // const _id = req.params.id;
         const _id = req.params.id;
-        const task = await Task.findById(_id);
+        const owner = req.user._id;
+        const task = await Task.findOne({ _id, owner});
+        // const task = await Task.findById(_id);
 
         if(!task){
             return res.status(404).send();
@@ -70,16 +85,22 @@ router.patch('/tasks/:id', async (req, res) => { // Обновление дан�
     }
 });
 
-router.delete('/tasks/:id', async (req, res) => { // Удаление таска
+router.delete('/tasks/:id', auth, async (req, res) => { // Удаление таска
     try{
+        // const task = await Task.findByIdAndDelete(_id);
         const _id = req.params.id;
-        const task = await Task.findByIdAndDelete(_id);
-
+        const owner = req.user._id;
+        const task = await Task.findOne({ _id, owner});
+        
         if(!task){
             return res.status(404).send();
         }
 
-        res.send(task);
+        await task.remove((err, task) => {
+            res.send(task);
+        });
+
+        
     }catch(e){
         res.status(500).send(e);
     }

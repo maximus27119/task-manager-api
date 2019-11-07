@@ -1,7 +1,9 @@
 const mongoose = require('mongoose');
 const validator = require('validator');
-const bryptjs = require('bcryptjs');
+const bcryptjs = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+
+const Task = require('./task');
 
 const userSchema = new mongoose.Schema({
     name: {
@@ -49,6 +51,18 @@ const userSchema = new mongoose.Schema({
     }]
 });
 
+// userSchema.virtual('tasks', {
+//     ref: 'Task',
+//     localField: '_id',
+//     foreignField: 'owner'
+// });
+
+userSchema.virtual('tasks', {
+    ref: 'Task',
+    localField: '_id',
+    foreignField: 'owner'
+});
+
 userSchema.methods.generateAuthToken = async function () {
     const user = this;
 
@@ -78,7 +92,7 @@ userSchema.statics.findByCredentials = async (email, password) => {
         throw new Error("Unnable to log in");
     }
 
-    const match = await bryptjs.compare(password, user.password);
+    const match = await bcryptjs.compare(password, user.password);
 
     if(!match) {
         throw new Error("Unnable to log in");
@@ -92,13 +106,17 @@ userSchema.statics.findByCredentials = async (email, password) => {
 userSchema.pre('save', async function (next) {
     const user = this;
 
-    // console.log('Just before saving user!');
-    // console.log(user);
-
     if(user.isModified('password')){
-        user.password = await bryptjs.hash(user.password, 8);
+        user.password = await bcryptjs.hash(user.password, 8);
     }
 
+    next();
+});
+
+// Delete user tasks when user is removed
+userSchema.pre('remove', async function (next) {
+    const user = this;
+    await Task.deleteMany({owner: user._id});
     next();
 });
 
