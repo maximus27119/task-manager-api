@@ -4,21 +4,7 @@ const userRouter = require('./routers/user');
 const taskRouter = require('./routers/tasks');
 
 const app = express();
-const port = process.env.PORT || 3000;
-
-// app.use((req, res, next) => {
-//     // console.log(req.method, req.path);
-//     if(req.method === 'GET'){
-//         res.send('GET requests are disable');
-//     } else {
-//         next();
-//     }
-    
-// });
-
-// app.use((req, res, next) => {
-//     res.status(503).send("Site is currently down. Please come back later.");
-// });
+const port = process.env.PORT;
 
 app.use(express.json());
 

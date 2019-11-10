@@ -3,6 +3,8 @@ const validator = require('validator');
 const bcryptjs = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
+const jwtSecret = process.env.JWT_SECRET;
+
 const Task = require('./task');
 
 const userSchema = new mongoose.Schema({
@@ -48,7 +50,10 @@ const userSchema = new mongoose.Schema({
             type: String,
             required: true
         }
-    }]
+    }],
+    avatar:{
+        type: Buffer
+    }
 },{
     timestamps: true
 });
@@ -68,7 +73,7 @@ userSchema.virtual('tasks', {
 userSchema.methods.generateAuthToken = async function () {
     const user = this;
 
-    const token = await jwt.sign({ _id: user._id.toString() }, 'thisismynewcourse');
+    const token = await jwt.sign({ _id: user._id.toString() }, jwtSecret);
     // console.log(token);
 
     user.tokens = user.tokens.concat({ token });
@@ -83,6 +88,7 @@ userSchema.methods.toJSON = function () {
 
     delete userObject.password;
     delete userObject.tokens;
+    delete userObject.avatar;
 
     return userObject;
 }
