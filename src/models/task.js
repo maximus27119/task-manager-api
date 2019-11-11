@@ -21,9 +21,6 @@ const taskSchema = new mongoose.Schema({
 
 taskSchema.pre('save', function (next) {
     const task = this;
-
-    console.log('Just before saving task!');
-
     next();
 });
 

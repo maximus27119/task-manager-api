@@ -85,7 +85,7 @@ router.post('/users/login', async (req, res) => { // Войти в профил�
     }
 });
 
-router.post('/users/logout', auth, async (req, res) => {
+router.post('/users/logout', auth, async (req, res) => { // Выйти из аккаунта
     try {
         req.user.tokens = req.user.tokens.filter((token) => {
             return token.token !== req.token;
@@ -98,7 +98,7 @@ router.post('/users/logout', auth, async (req, res) => {
     }
 });
 
-router.post('/users/logoutAll', auth, async (req, res) => {
+router.post('/users/logoutAll', auth, async (req, res) => { // Завершить все сесии (выйти со всех устройств/удалить все токены)
     try {
         req.user.tokens = [];
 
