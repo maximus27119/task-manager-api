@@ -3,10 +3,6 @@ const Task = require('../models/task');
 const auth = require('../middleware/auth');
 const router = new express.Router();
 
-// GET /tasks?completed=true
-// GET /tasks?limit=10&skip=10
-// GET /tasks?sortBy=createdAt:desc
-
 router.get('/tasks', auth, async (req, res) => { // Получить массив тасков
     const match = {};
     const sort = {};
